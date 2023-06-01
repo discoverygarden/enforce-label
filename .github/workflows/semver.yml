@@ -1,0 +1,17 @@
+---
+name: Semantic Version tagger
+on:
+  pull_request_target:
+    types: closed
+    branches:
+      - main
+jobs:
+  update:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+      - name: Run Semantic Version tagging action
+        uses: discoverygarden/auto-semver@v1
+      - name: Update Major Tag
+        uses: discoverygarden/action-major-tag@main
+        with:
+          prefix: 'v'
