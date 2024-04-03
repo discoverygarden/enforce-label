@@ -1,6 +1,6 @@
 {
   "name": "enforce-label",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Action for enforcing labels on a pull-request.",
   "main": "src/index.ts",
   "scripts": {
