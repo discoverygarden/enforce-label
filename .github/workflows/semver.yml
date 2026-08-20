@@ -8,7 +8,7 @@ on:
 jobs:
   update:
     if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Run Auto Semver
         uses: discoverygarden/auto-semver@v1

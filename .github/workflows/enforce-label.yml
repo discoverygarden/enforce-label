@@ -9,7 +9,7 @@ on:
 
 jobs:
   check_labels:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Check Pull Request Labels
         uses: discoverygarden/enforce-label@main

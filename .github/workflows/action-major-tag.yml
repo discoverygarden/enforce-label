@@ -7,7 +7,7 @@ on:
 
 jobs:
   new-major-tag:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Run Action Major Tagger
         uses: discoverygarden/action-major-tag@main
