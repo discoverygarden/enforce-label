@@ -4,12 +4,13 @@ A Github action to enforce labeling a pull request with specified labels.
 
 ## Inputs
 - **required_labels:** A list of labels that at least one is required on the pull request.
+- **github_token:** Token used to read the pull request's labels from the API. Defaults to `github.token`, which needs read access to pull requests.
 
 ## Outputs
 Currently there are no outputs defined for this workflow.
 
 ## Secrets
-This action does not use any secrets.
+This action does not need any extra secrets. It uses the workflow's `github.token` to read labels.
 
 ## Usage
 Learn more about GitHub Actions in general [here](https://docs.github.com/en/actions/quickstart).

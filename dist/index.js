@@ -9655,7 +9655,10 @@ const github = __importStar(__nccwpck_require__(5438));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const labels = github.context.payload.pull_request.labels;
+            // Read the labels live: the event payload is a snapshot from when the event fired, so an
+            // "opened" run misses a label added right after, and a re-run replays the stale snapshot.
+            const octokit = github.getOctokit(core.getInput("github_token", { required: true }));
+            const { data: labels } = yield octokit.rest.issues.listLabelsOnIssue(Object.assign(Object.assign({}, github.context.repo), { issue_number: github.context.payload.pull_request.number, per_page: 100 }));
             const required_labels = (core.getInput("required_labels", { required: true }) !== "") ? (core.getInput("required_labels", { required: false })).split(",") : [];
             console.log(`PR Labels: ${JSON.stringify(labels)}`);
             // Check we have at least one of the required labels set.

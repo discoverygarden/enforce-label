@@ -3,7 +3,14 @@ import * as github from "@actions/github";
 
 async function run() {
   try {
-    const labels = github.context.payload!.pull_request!.labels!;
+    // Read the labels live: the event payload is a snapshot from when the event fired, so an
+    // "opened" run misses a label added right after, and a re-run replays the stale snapshot.
+    const octokit = github.getOctokit(core.getInput("github_token", {required: true}));
+    const {data: labels} = await octokit.rest.issues.listLabelsOnIssue({
+      ...github.context.repo,
+      issue_number: github.context.payload!.pull_request!.number,
+      per_page: 100,
+    });
     const required_labels: string[] = (core.getInput("required_labels", {required: true}) !== "") ? (core.getInput("required_labels", {required: false})).split(",") : [];
     console.log(`PR Labels: ${JSON.stringify(labels)}`);
 

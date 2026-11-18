@@ -1,6 +1,9 @@
 name: 'Enforce Label'
 description: 'Bump the major version reference tag for the action.'
 inputs:
+  github_token:
+    description: 'Token used to read the pull request labels.'
+    default: ${{ github.token }}
   required_labels:
     description: 'A list of labels that at least one is required on the pull request.'
     required: true
