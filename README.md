@@ -4,7 +4,7 @@ A Github action to enforce labeling a pull request with specified labels.
 
 ## Inputs
 - **required_labels:** A list of labels that at least one is required on the pull request.
-- **github_token:** Token used to read the pull request's labels from the API. Defaults to `github.token`, which needs read access to pull requests.
+- **github_token:** Token used to read the pull request's current labels from the API. Defaults to `github.token`, which needs `pull-requests: read` or `issues: read` (the default token has this unless the workflow or repo restricts permissions). If the API call fails, the action logs a warning and falls back to the labels in the event payload. That snapshot can be stale: a PR labeled just after it was opened fails its `opened` run, and re-running replays the same snapshot.
 
 ## Outputs
 Currently there are no outputs defined for this workflow.

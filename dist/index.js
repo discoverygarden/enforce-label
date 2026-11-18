@@ -9652,15 +9652,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+// The event payload is a snapshot from when the event fired, so an "opened" run misses a label
+// added right after, and a re-run replays the stale snapshot. Read the labels live instead, and
+// fall back to the payload if the token can't read them (restricted permissions, fork PRs).
+function getLabels() {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        const payloadLabels = (_b = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.labels) !== null && _b !== void 0 ? _b : [];
+        const token = core.getInput("github_token");
+        if (token === "" || github.context.issue.number === undefined) {
+            return payloadLabels;
+        }
+        try {
+            const octokit = github.getOctokit(token);
+            return yield octokit.paginate(octokit.rest.issues.listLabelsOnIssue, Object.assign(Object.assign({}, github.context.repo), { issue_number: github.context.issue.number, per_page: 100 }));
+        }
+        catch (error) {
+            core.warning(`Could not read labels from the API (${error.message}); using the event payload, which may be stale. Grant the token 'pull-requests: read' or 'issues: read'.`);
+            return payloadLabels;
+        }
+    });
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            // Read the labels live: the event payload is a snapshot from when the event fired, so an
-            // "opened" run misses a label added right after, and a re-run replays the stale snapshot.
-            const octokit = github.getOctokit(core.getInput("github_token", { required: true }));
-            const { data: labels } = yield octokit.rest.issues.listLabelsOnIssue(Object.assign(Object.assign({}, github.context.repo), { issue_number: github.context.payload.pull_request.number, per_page: 100 }));
+            const labels = yield getLabels();
             const required_labels = (core.getInput("required_labels", { required: true }) !== "") ? (core.getInput("required_labels", { required: false })).split(",") : [];
-            console.log(`PR Labels: ${JSON.stringify(labels)}`);
+            console.log(`PR Labels: ${JSON.stringify(labels.map((l) => l.name))}`);
             // Check we have at least one of the required labels set.
             if (required_labels.length > 0 &&
                 !required_labels.some(requiredLabel => labels.find((l) => l.name === requiredLabel))) {
