@@ -4,12 +4,13 @@ A Github action to enforce labeling a pull request with specified labels.
 
 ## Inputs
 - **required_labels:** A list of labels that at least one is required on the pull request.
+- **github_token:** Token used to read the pull request's current labels from the API. Defaults to `github.token`, which needs `pull-requests: read` or `issues: read` (the default token has this unless the workflow or repo restricts permissions). If the API call fails, the action logs a warning and falls back to the labels in the event payload. That snapshot can be stale: a PR labeled just after it was opened fails its `opened` run, and re-running replays the same snapshot.
 
 ## Outputs
 Currently there are no outputs defined for this workflow.
 
 ## Secrets
-This action does not use any secrets.
+This action does not need any extra secrets. It uses the workflow's `github.token` to read labels.
 
 ## Usage
 Learn more about GitHub Actions in general [here](https://docs.github.com/en/actions/quickstart).
@@ -28,6 +29,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: enforce-label-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: true
+
 jobs:
   check_labels:
     runs-on: ubuntu-latest
@@ -38,5 +43,7 @@ jobs:
           required_labels: major,minor,patch,no-update
 ```
 The labels provided in this case are our typical semantic version tagging labels, as well as a `no-update` label that will not initiate the semantic tagging workflow, in the rare case we don't want to initiate the workoflow.
+
+The `concurrency` block cancels a stale run when a newer event (e.g. adding the label) arrives for the same PR, so an older failing run can't overwrite the result. Keep the group keyed on the PR number.
 
 The `types` on the `pull_request_target` are the base conditions `[opened, synchronize, reopened]` as well as two scenarios `[labeled, unlabeled]` which we want to track as we're specifically dealing with labels.
