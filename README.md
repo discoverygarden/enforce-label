@@ -29,6 +29,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: enforce-label-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   check_labels:
     runs-on: ubuntu-latest
@@ -39,5 +43,7 @@ jobs:
           required_labels: major,minor,patch,no-update
 ```
 The labels provided in this case are our typical semantic version tagging labels, as well as a `no-update` label that will not initiate the semantic tagging workflow, in the rare case we don't want to initiate the workoflow.
+
+The `concurrency` block cancels a stale run when a newer event (e.g. adding the label) arrives for the same PR, so an older failing run can't overwrite the result. Keep the group keyed on the PR number.
 
 The `types` on the `pull_request_target` are the base conditions `[opened, synchronize, reopened]` as well as two scenarios `[labeled, unlabeled]` which we want to track as we're specifically dealing with labels.
