@@ -30,7 +30,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: enforce-label-${{ github.event.pull_request.number || github.run_id }}
+  group: enforce-label-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
   cancel-in-progress: true
 
 jobs:
